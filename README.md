@@ -2,6 +2,10 @@
 
 This Python script monitors a cryptocurrency wallet on the [hypurrscan.io](https://hypurrscan.io) website, specifically tracking new orders and position updates for a given wallet address. It uses web scraping to extract data, sends real-time alerts via Telegram, and compares position changes over time to provide detailed updates. Below is a comprehensive overview of its features, written in Markdown format.
 
+Different wallets can be targetd by altering the hypurrscan addrress.
+Must use own telegram bot token and chat id. 
+
+link to my telegram bot can be found here: https://t.me/+k0vqkdCi1atkMDk1
 ---
 
 ## Features
@@ -116,14 +120,6 @@ This Python script monitors a cryptocurrency wallet on the [hypurrscan.io](https
 - **Webpage Dependency**: Relies on the structure of the `hypurrscan.io` webpage (e.g., XPath for tab buttons, table column indices). If the webpage changes, the script may break.
 - **No Persistence Across Runs**: Does not persist the last order identifier across script runs, so it may send a duplicate alert for the last order after a restart.
 - **Minimal Error Reporting**: Does not log errors or failed Telegram requests; it silently continues if a request fails.
-
----
-
-## Potential Improvements
-- **Add Persistence**: Implement file-based persistence for `order_history` to avoid duplicate alerts after a restart.
-- **Enhanced Error Handling**: Log errors (e.g., failed Telegram requests, scraping issues) to a file for debugging.
-- **Dynamic XPath**: Use more robust selectors (e.g., by button text or class) to handle webpage changes.
-- **Configurability**: Allow configuration of intervals, URLs, and Telegram settings via a config file or command-line arguments.
 
 ---
 
