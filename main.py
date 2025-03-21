@@ -9,27 +9,27 @@ import time
 from collections import deque
 import logging
 import os
+from http.server import BaseHTTPRequestHandler, HTTPServer
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-# Configuration (use environment variables for sensitive data)
+# Configuration (use environment variables)
 WALLET_URL = os.getenv("WALLET_URL", "https://hypurrscan.io/address/0x744cf47e88d9d0847544f0ac2fa7575cf5925f79")
 CHECK_INTERVAL = int(os.getenv("CHECK_INTERVAL", 5))
 POSITIONS_CHECK_INTERVAL = int(os.getenv("POSITIONS_CHECK_INTERVAL", 60))
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 ORDER_HISTORY_SIZE = int(os.getenv("ORDER_HISTORY_SIZE", 5))
+PORT = int(os.getenv("PORT", 8080))  # Cloud Run requires a port
 
 def get_driver():
     chrome_options = Options()
     chrome_options.add_argument("--headless")
-    chrome_options.add_argument("--no-sandbox")  # Required for cloud environments
-    chrome_options.add_argument("--disable-dev-shm-usage")  # Avoids issues in cloud environments
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--disable-dev-shm-usage")
     chrome_options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/91.0.4472.124")
-    
-    # Use a remote WebDriver or rely on the cloud service's Chrome setup
     driver = webdriver.Chrome(options=chrome_options)
     logger.info("Chrome WebDriver initialized successfully")
     return driver
@@ -168,7 +168,15 @@ def send_telegram_alert(order_details=None, positions=None, last_positions=None)
     except Exception as e:
         logger.error(f"Error sending Telegram alert: {e}")
 
-def main():
+# Cloud Run requires a web server, but we can run our script in the background
+class HealthCheckHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.send_header("Content-type", "text/plain")
+        self.end_headers()
+        self.wfile.write(b"Bot is running")
+
+def run_background_task():
     driver = None
     try:
         driver = get_driver()
@@ -197,13 +205,26 @@ def main():
                 time.sleep(CHECK_INTERVAL)
             except Exception as e:
                 logger.error(f"Error in main loop: {e}")
-                time.sleep(CHECK_INTERVAL)  # Wait before retrying
+                time.sleep(CHECK_INTERVAL)
     except Exception as e:
         logger.error(f"Fatal error: {e}")
     finally:
         if driver:
             driver.quit()
             logger.info("WebDriver closed")
+
+def main():
+    # Start the background task in a separate thread
+    from threading import Thread
+    background_thread = Thread(target=run_background_task)
+    background_thread.daemon = True
+    background_thread.start()
+
+    # Start a simple HTTP server for Cloud Run health checks
+    server_address = ('', PORT)
+    httpd = HTTPServer(server_address, HealthCheckHandler)
+    logger.info(f"Starting health check server on port {PORT}")
+    httpd.serve_forever()
 
 if __name__ == "__main__":
     main()
