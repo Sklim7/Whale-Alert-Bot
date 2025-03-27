@@ -1,6 +1,6 @@
 # Whale Alert Script Description
 
-This Python script monitors a cryptocurrency wallet on the [hypurrscan.io](https://hypurrscan.io) website, specifically tracking new orders and position updates for a given wallet address. It uses web scraping to extract data, sends real-time alerts via Telegram, and compares position changes over time to provide detailed updates. Below is a comprehensive overview of its features, written in Markdown format.
+This Python script monitors a cryptocurrency wallet on the [hypurrscan.io](https://hypurrscan.io) website, specifically tracking new orders and position updates for a given wallet address. It uses web scraping to extract data, sends real-time alerts via Telegram, and compares position changes over time to provide detailed updates. Below is a comprehensive overview of its features
 
 Different wallets can be targetd by altering the hypurrscan addrress.
 Must use own telegram bot token and chat id. 
@@ -96,25 +96,6 @@ link to my telegram bot can be found here: https://t.me/+k0vqkdCi1atkMDk1
 - **Reliable Sending**:
   - Sends messages via the Telegram API with a 10-second timeout to handle network issues.
 
-### 6. **Error Handling and Robustness**
-- **Web Scraping Errors**:
-  - Handles missing or malformed table rows by skipping invalid data.
-  - Uses `try-except` blocks to catch `IndexError` and `ValueError` during data parsing (e.g., if a number can’t be converted to a float).
-- **Dynamic Page Loading**:
-  - Waits for elements to be clickable before interacting with the page.
-  - Adds a 1-second delay after clicking tabs to ensure the table loads.
-- **Browser Cleanup**:
-  - Uses a `try-finally` block in `main` to ensure the Selenium WebDriver is closed properly, even if the script crashes or is interrupted.
-
-### 7. **Efficient Design**
-- **Dictionary Lookups**:
-  - Uses dictionaries (`current_ids` and `last_ids`) to efficiently compare current and previous positions by ID, avoiding nested loops.
-- **Memory Management**:
-  - Limits the `order_history` deque to 5 entries to prevent excessive memory usage.
-- **Minimal Dependencies**:
-  - Relies on standard libraries (`time`, `collections`) and well-known packages (`requests`, `selenium`, `beautifulsoup4`).
-
----
 
 ## Limitations
 - **Webpage Dependency**: Relies on the structure of the `hypurrscan.io` webpage (e.g., XPath for tab buttons, table column indices). If the webpage changes, the script may break.
